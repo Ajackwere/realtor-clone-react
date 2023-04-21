@@ -2,6 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 
 export default function SignIn() {
+    const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email:"",
         password:"",
@@ -37,7 +38,7 @@ export default function SignIn() {
                     />
                     <div>
                     <input 
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     id="password"
                     value={password}
                     onChange={onChange}
