@@ -2,33 +2,58 @@ import React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import OAuth from '../components/OAuth';
-import {getAuth, createUserWithEmailAndPassword} from "firebase/auth"
-import {db} from "../firebase";
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    updateProfile
+} from "firebase/auth";
+import { db } from "../firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function SignUp() {
     const [showPassword] = useState(false);
     const [formData, setFormData] = useState({
       name:"",  
       email:"",
-        password:"",
+      password:"",
     });
     const {name, email, password} = formData;
+    const navigate = useNavigate();
     function onChange(e){
         setFormData((prevState)=>({
             ...prevState,
             [e.target.id]: e.target.value,
         }))
     }
-    function onSubmit(e){
+    async function onSubmit(e){
         e.preventDefault()
 
         try {
             const auth = getAuth()
-            const userCredential =createUserWithEmailAndPassword(auth, email, password)
+            const userCredential =await
+            createUserWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+            updateProfile(auth.currentUser, {
+                displayName: name
+            })
+
             const user = userCredential.user
-            console.log(user);
+            const formDataCopy = {...formData}
+            delete formDataCopy.password
+            formDataCopy.timestamp = serverTimestamp();
+
+            await setDoc(doc(db, "users", user.uid),
+            formDataCopy)
+            toast.success("Sign Up Successful!")
+            navigate("/");
         } catch (error) {
-            console.log(error);
+            console.error(error);
+            toast.error("Something went wrong with the registration")
         }
     }
   return (
