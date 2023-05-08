@@ -18,7 +18,7 @@ export default function ForgotPassword() {
             await sendPasswordResetEmail(auth, email)
             toast.success("Email was sent. Check spam folder");
         } catch (error){
-            toast.error("Could not reset password. Enter correct email")
+            toast.error("Could not reset password. Enter the correct email")
         }
     }
     return (
