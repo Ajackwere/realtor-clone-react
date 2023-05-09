@@ -1,10 +1,10 @@
 import React from 'react';
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import OAuth from '../components/OAuth';
 import { signInWithEmailAndPassword, 
 getAuth} from 'firebase/auth';
-import { Toast } from 'react-toastify/dist/components';
+import { toast } from 'react-toastify';
 
 export default function SignIn() {
     const [showPassword] = useState(false);
