@@ -1,12 +1,20 @@
+import { getAuth } from 'firebase/auth';
 import React from 'react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router';
 
 export default function Profile() {
+  const auth = getAuth();
+  const navigate = useNavigate();
   const [ formData, setFormData] = useState({
-    name: "jack",
-    email: "austinejackwere@gmail.com",
+    name: auth.currentUser.displayName,
+    email: auth.currentUser.email,
   });
   const {name, email} = formData;
+  function onLogOut(){
+    auth.signOut()
+    navigate("/");
+  }
   return (
     <>
       <section className='max-w-6xl mx-auto flex
@@ -27,12 +35,16 @@ export default function Profile() {
             disabled className='mb-6 w-full px-4 py-2 text-xl text-gray-600 bg-white border border-gray-300 
             rounded transition ease-in-out'/>
 
-            <div>
-              <p>
+            <div className='flex justify-between whitespace-nowrap text-sm sm:text-lg mb-6'>
+              <p className='flex items-center '>
                 Do you want to change your name?
-                <span>Edit</span>
+                <span className='text-red-500
+                hover:text-red-700 transition ease-in-out
+                duration-200 ml-1 cursor-pointer'>Edit</span>
               </p>
-              <p> Sign Out </p>
+              <p onClick={onLogOut} className='text-blue-500 hover:text-blue-800
+              transition duration-200 ease-in-out 
+              cursor-pointer '> Sign Out </p>
             </div>
           
           </form>
