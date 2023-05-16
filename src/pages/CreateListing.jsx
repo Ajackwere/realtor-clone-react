@@ -3,9 +3,11 @@ import { useState } from "react";
 export default function CreateListing() {
     const [formData, setFormData] = useState({
         type: "rent",
-        name:""
+        name:"",
+        bedrooms: 1,
+        bathrooms: 1,
     });
-    const { type, name } = formData;
+    const { type, name, bedroooms, bathrooms } = formData;
     function onChange(){
 
     };
@@ -38,7 +40,22 @@ export default function CreateListing() {
                 </button>
             </div>
             <p className="text-lg mt-6 font-semibold"> Name</p>
-            <input type="text" id="name" value={name}/>
+            <input type="text"
+            id="name"
+            value={name} onChange={onChange}
+            placeholder="Property Name" maxLength="32" minLength="10" required 
+            className="w-full px-4 py-2 text-xl text-gray-700
+            bg-white border border-gray-300 rounded transition duration-150
+            ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
+            />
+            <div>
+                <div>
+                    <p className="text-lg font-semibold">
+                        Beds
+                    </p>
+                    <input type="number" id="bedrooms" value={bedrooms} />
+                </div>
+            </div>
         </form>
     </main>
   )
