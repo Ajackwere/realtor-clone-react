@@ -1,6 +1,10 @@
 import { useState } from "react";
+import Spinner from "../components/Spinner";
+import {toast} from "react-toastify"
 
 export default function CreateListing() {
+    const [geolocationEnabled, setGeolocationEnabled] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         type: "rent",
         name:"",
@@ -13,12 +17,16 @@ export default function CreateListing() {
         offer: false,
         regularPrice: 0,
         discountedPrice: 0,
-
+        latitude: 0,
+        longitude: 0,
+        images: {}
+        
     });
     const { type, name, bedrooms, bathrooms, parking,
-        furnished, description, address, offer, regularPrice, discountedPrice,
+        furnished, description, address, offer, regularPrice,
+        discountedPrice, images, latitude, longitude,
     } = formData;
-    function onChange(){
+    function onChange(e){
         let boolean = null;
         if(e.target.value === "true"){
             boolean = true;
@@ -41,17 +49,44 @@ export default function CreateListing() {
             }));
         }
     };
+    async function onSubmit(e){
+        e.preventDefault();
+        setLoading(true);
+        if(discountedPrice >= regularPrice){
+            setLoading(false)
+            toast.error("Discounted price should be less than regular price");
+            return;
+        }
+        if(images.length > 5){
+            setLoading(false);
+            toast.error("maximum 5 images allowed")
+        }
+        let geolocation = {}
+        let location
+        if(geolocationEnabled){
+            const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`);
+            const data = await response.json();
+        }
+    }
+    if(loading){
+        return < Spinner />;
+    }
   return (
     <main className="max-w-md px-2 mx-auto">
         <h1 className="text-3xl text-center mt-6
         font-bold
-        ">Create a Listing</h1>
-        <form>
+        ">
+            Create a Listing
+        </h1>
+        <form onSubmit={onSubmit}>
             <p className="text-lg mt-6 font-semibold"> Sell or Rent
             </p>
             <div className="flex">
-                <button type="button" id="type" value="sale"
-                onClick={onchange} className={`mr-3 px-7 py-3
+                <button type="button"
+                id="type"
+                value="sale"
+                onClick={onChange}
+                className={`mr-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -59,12 +94,15 @@ export default function CreateListing() {
                 }`}>
                     Sell
                 </button>
-                <button type="button" id="type" value="sale"
-                onClick={onchange} className={`ml-3 px-7 py-3
+                <button type="button"
+                id="type"
+                value="rent"
+                onClick={onChange}
+                className={`ml-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
-                    type=== "sell" ? "bg-white text-black" : "bg-slate-600 text-white"
+                    type=== "sale" ? "bg-white text-black" : "bg-slate-600 text-white"
                 }`}>
                     Rent 
                 </button>
@@ -72,7 +110,8 @@ export default function CreateListing() {
             <p className="text-lg mt-6 font-semibold"> Name</p>
             <input type="text"
             id="name"
-            value={name} onChange={onChange}
+            value={name}
+            onChange={onChange}
             placeholder="Property Name" maxLength="32" minLength="10" required 
             className="w-full px-4 py-2 text-xl text-gray-700
             bg-white border border-gray-300 rounded transition duration-150
@@ -120,7 +159,7 @@ export default function CreateListing() {
                 <button type="button"
                 id="parking"
                 value={true}
-                onClick={onchange} className={`mr-3 px-7 py-3
+                onClick={onChange} className={`mr-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -131,7 +170,7 @@ export default function CreateListing() {
                 <button type="button"
                 id="parking"
                 value="false"
-                onClick={onchange} className={`ml-3 px-7 py-3
+                onClick={onChange} className={`ml-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -146,7 +185,8 @@ export default function CreateListing() {
                 <button type="button"
                 id="furnished"
                 value={true}
-                onClick={onchange} className={`mr-3 px-7 py-3
+                onClick={onChange}
+                className={`mr-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -157,7 +197,7 @@ export default function CreateListing() {
                 <button type="button"
                 id="furnished"
                 value={false}
-                onClick={onchange} className={`ml-3 px-7 py-3
+                onClick={onChange} className={`ml-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -166,17 +206,51 @@ export default function CreateListing() {
                     No  
                 </button>
             </div>
-            <p className="text-lg mt-6 font-semibold"> Address </p>
+            <p className="text-lg mt-6 font-semibold"> Physical Address </p>
             <textarea type="text"
             id="address"
             value={address}
             onChange={onChange}
-            placeholder="Address"
+            placeholder="Physical Address"
             required 
             className="w-full px-4 py-2 text-xl text-gray-700
             bg-white border border-gray-300 rounded transition duration-150
             ease-in-out focus:text-gray-700 focus:bg-white focus:border-slate-600 mb-6"
             />
+            {!geolocationEnabled && (
+                <div className="flex space-x-6 justify-start mb-5">
+                    <div>
+                    <p className="text-lg font-semibold">Latitude</p>
+                    <input type="number"
+                    id="latitude"
+                    value={latitude}
+                    onChange={onChange}
+                    required
+                    min= "-90"
+                    max="90"
+                    className="w-full px-4 py-2 text-xl text-gray-800 
+                    bg-white border border-gray-300 rounded transition duration-150
+                    ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-800 
+                    text-center"
+                    />
+                    </div>
+                    <div>
+                    <p className="text-lg font-semibold">Longitude</p>
+                    <input type="number"
+                    id="longitude"
+                    value={longitude}
+                    onChange={onChange}
+                    required
+                    min= "-180"
+                    max="180"
+                    className="w-full px-4 py-2 text-xl text-gray-800 
+                    bg-white border border-gray-300 rounded transition duration-150
+                    ease-in-out focus:bg-white focus:text-gray-700 focus:border-slate-800 
+                    text-center"
+                    />
+                    </div>
+                </div>
+            )}
             <p className="text-lg font-semibold"> Description  </p>
             <textarea type="text"
             id="description"
@@ -194,7 +268,7 @@ export default function CreateListing() {
                 <button type="button"
                 id="offer"
                 value={true}
-                onClick={onchange} className={`mr-3 px-7 py-3
+                onClick={onChange} className={`mr-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -205,7 +279,7 @@ export default function CreateListing() {
                 <button type="button"
                 id="offer"
                 value={false}
-                onClick={onchange} className={`ml-3 px-7 py-3
+                onClick={onChange} className={`ml-3 px-7 py-3
                 font-medium text-sm uppercase shadow-md rounded
                 hover:shadow-lg focus:shadow-lg active:shadow-lg
                 transition duration-150 ease-in-out w-full ${
@@ -214,7 +288,7 @@ export default function CreateListing() {
                     No  
                 </button>
             </div>
-            <div className="flex justify-start items-center mb-6">
+            <div className="flex items-center mb-6">
                 <div>
                     <p className="text-lg font-semibold">Regular
                     price</p>
@@ -285,11 +359,12 @@ export default function CreateListing() {
                 transition duration-150 ease-in-out focus:bg-white focus:border-slate-600"
                 />
             </div>
-            <button type="submit "
+            <button type="submit"
             className="mb-6 w-full px-7 py-3 bg-blue-600 text-white font-medium text-sm
             uppercase rounded shadow-md hover:bg-blue-800 hover:shadow-lg focus:bg-blue-900
             focus:shadow-lg active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
-            >Create Listing</button>
+            >Create Listing
+            </button>
         </form>
     </main>
   );
