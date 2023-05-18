@@ -19,7 +19,27 @@ export default function CreateListing() {
         furnished, description, address, offer, regularPrice, discountedPrice,
     } = formData;
     function onChange(){
-
+        let boolean = null;
+        if(e.target.value === "true"){
+            boolean = true;
+        }
+        if(e.target.value === "false"){
+            boolean = false;
+        }
+        // for the files
+        if (e.target.files){
+            setFormData((prevState)=> ({
+                ...prevState,
+                images: e.target.files
+            }));
+        }
+        //for the texts/boolean/number
+        if(!e.target.files){
+            setFormData((prevState)=> ({
+                ...prevState,
+                [e.target.id]: boolean ?? e.target.value,
+            }));
+        }
     };
   return (
     <main className="max-w-md px-2 mx-auto">
