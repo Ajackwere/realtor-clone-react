@@ -61,7 +61,7 @@ export default function CreateListing() {
     async function onSubmit(e){
         e.preventDefault();
         setLoading(true);
-        if(discountedPrice >= regularPrice){
+        if(+discountedPrice >= +regularPrice){
             setLoading(false)
             toast.error("Discounted price should be less than regular price");
             return;
@@ -71,11 +71,10 @@ export default function CreateListing() {
             toast.error("maximum 5 images allowed")
         }
         let geolocation = {}
-        let location
+        let location;
         if(geolocationEnabled){
             const response = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&
-                key=${process.env.REACT_APP_GEOCODE_API_KEY}`);
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`);
             const data = await response.json();
             console.log(data);
             geolocation.lat = data.result[0]?.geometry.location.lat ?? 0;
@@ -115,6 +114,9 @@ export default function CreateListing() {
                         case 'running':
                             console.log('Upload is running');
                             break;
+                        default:
+                            console.log('Unknown upload state');
+                            break;
                         }
                     }, 
                     (error) => {
@@ -132,7 +134,7 @@ export default function CreateListing() {
                 });
             }
         const imgUrls = await Promise.all(
-            [...images].map((image)=>storeImage(image))
+            [...images].map((image) => storeImage(image))
             ).catch((error)=>{
                 setLoading(false);
                 toast.error("Images not uploaded");
@@ -143,6 +145,7 @@ export default function CreateListing() {
             imgUrls,
             geolocation,
             timestamp: serverTimestamp(),
+            userRef: auth.currentUser.uid,
         };
 
     }
