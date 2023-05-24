@@ -10,8 +10,10 @@ import {getAuth } from "firebase/auth";
 import {v4 as uuidv4} from "uuid";
 import {addDoc, collection, serverTimestamp} from "firebase/firestore";
 import {db} from "../firebase";
+import { useNavigate } from "react-router";
 
 export default function CreateListing() {
+    const navigate = useNavigate();
     const auth = getAuth();
     const [geolocationEnabled, setGeolocationEnabled] = useState(true);
     const [loading, setLoading] = useState(false);
@@ -71,27 +73,44 @@ export default function CreateListing() {
             setLoading(false);
             toast.error("maximum 5 images allowed")
         }
-        let geolocation = {}
-        let location;
-        if(geolocationEnabled){
-            const response = await fetch(
-                `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`);
-            const data = await response.json();
-            console.log(data);
-            geolocation.lat = data.result[0]?.geometry.location.lat ?? 0;
-            geolocation.lng = data.result[0]?.geometry.location.lng ?? 0;
+        let geolocation = {};
+let location;
 
-            location = data.status === "ZERO_RESULTS" && undefined;
+try {
+  if (geolocationEnabled) {
+    const response = await Promise.race([
+      fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), 7000)) // Set timeout to 7 seconds
+    ]);
 
-            if(location === undefined){
-                setLoading(false)
-                toast.error("Please enter a correct address");
-                return;
-            }
-        }else{
-            geolocation.lat = latitude;
-            geolocation.lat = longitude;
-        }
+    if (!response.ok) {
+      throw new Error(`Request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+    geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
+    geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
+
+    location = data.status === "ZERO_RESULTS" && undefined;
+
+    if (location === undefined) {
+      setLoading(false);
+      toast.error("Please enter a correct address");
+      return;
+    }
+  } else {
+    geolocation.lat = latitude;
+    geolocation.lng = longitude;
+  }
+} catch (error) {
+  // Handle error appropriately
+  console.error(error);
+  setLoading(false);
+  toast.error("An error occurred while fetching geolocation data");
+  return;
+}
+
 
         async function storeImage(image){
             return new Promise((resolve, reject)=>{
@@ -150,9 +169,12 @@ export default function CreateListing() {
         };
         delete formDataCopy.images;
         !formDataCopy.offer && delete formDataCopy.discountedPrice;
+        delete formDataCopy.latitude;
+        delete formDataCopy.longitude;
         const docRef = await addDoc(collection(db, "listings"), formDataCopy);
         setLoading(false);
         toast.success("Listing Created");
+        navigate(`/category/${formDataCopy.type} /${docRef.id}`)
     }
 
     if(loading){
