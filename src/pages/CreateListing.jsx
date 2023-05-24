@@ -8,7 +8,8 @@ import { getStorage,
 } from "firebase/storage";
 import {getAuth } from "firebase/auth";
 import {v4 as uuidv4} from "uuid";
-import {serverTimestamp} from "firebase/firestore";
+import {addDoc, collection, serverTimestamp} from "firebase/firestore";
+import {db} from "../firebase";
 
 export default function CreateListing() {
     const auth = getAuth();
@@ -121,7 +122,7 @@ export default function CreateListing() {
                     }, 
                     (error) => {
                         // Handle unsuccessful uploads
-                        reject(error)
+                        reject(error);
                     }, 
                     () => {
                         // Handle successful uploads on complete
@@ -147,7 +148,11 @@ export default function CreateListing() {
             timestamp: serverTimestamp(),
             userRef: auth.currentUser.uid,
         };
-
+        delete formDataCopy.images;
+        !formDataCopy.offer && delete formDataCopy.discountedPrice;
+        const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+        setLoading(false);
+        toast.success("Listing Created");
     }
 
     if(loading){
