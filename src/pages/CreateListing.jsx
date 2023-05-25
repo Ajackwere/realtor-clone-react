@@ -157,7 +157,7 @@ try {
             [...images].map((image) => storeImage(image))
             ).catch((error)=>{
                 setLoading(false);
-                toast.error("Images not uploaded");
+                toast.error("Error uploading image: Files should be less than 5mbs");
                 return;
             });
         const formDataCopy = {
