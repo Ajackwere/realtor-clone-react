@@ -1,9 +1,16 @@
 import { getAuth, updateProfile } from 'firebase/auth';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'react-toastify';
-import { collection, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { collection,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  where
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import {FcHome} from "react-icons/fc";
 import { Link } from 'react-router-dom';
@@ -49,27 +56,30 @@ export default function Profile() {
       
     }
   }
-  useEffect(()=>{
-    async function fetchUserListings(){
-      const listingRef = collection(db, "Listings");
-      const q = query(
-        listingRef,
-        where("userRef", "==", auth.currentUser.uid),
-        orderBy("timestamp", "desc")
-      );
-      const querySnap = await getDocs(q);
-      let listings = [];
-      querySnap.forEach((doc)=>{
-        return listings.push({
-          id: doc.id,
-          data: doc.data(),
-        });
+  async function fetchUserListings(){
+    const listingRef = collection(db, "Listings");
+    const q =query(
+      listingRef,
+      where("userRef", "==", auth.currentUser.uid),
+      orderBy("timestamp", "desc")
+    );
+
+    const querySnap = await getDocs(q);
+    let listings = [];
+
+    querySnap.forEach((doc) => {
+      return listings.push({
+        id: doc.id,
+        data: doc.data(),
       });
-      setListings(listings);
-      setLoading(false);
-    }
+    });
+    setListings(listings);
+    setLoading(false);
+  }
+
+  useEffect(()=>{
     fetchUserListings();
-  }, [auth.currentUser.uid]);
+  }, [auth.currentUser.uid]); // removed the dependency array
   return (
     <>
       <section className='max-w-6xl mx-auto flex
