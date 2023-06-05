@@ -50,36 +50,33 @@ export default function Profile() {
           name,
         });
       }
-      toast.success('Profile details updated')
+      toast.success('Profile details updated');
     } catch (error) {
-      toast.error("Failed to update profile details")
-      
+      toast.error("Failed to update profile details");   
     }
-  }
-  async function fetchUserListings(){
-    const listingRef = collection(db, "Listings");
-    const q =query(
-      listingRef,
-      where("userRef", "==", auth.currentUser.uid),
-      orderBy("timestamp", "desc")
-    );
-
-    const querySnap = await getDocs(q);
-    let listings = [];
-
-    querySnap.forEach((doc) => {
-      return listings.push({
-        id: doc.id,
-        data: doc.data(),
-      });
-    });
-    setListings(listings);
-    setLoading(false);
   }
 
   useEffect(()=>{
+    async function fetchUserListings(){
+      const listingref = collection(db, "listings");
+      const q =query(
+        listingref,
+        where("userRef", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc")
+      );
+      const querySnap = await getDocs(q);
+      let listings = [];
+      querySnap.forEach((doc)=>{
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+      setListings(listings);
+      setLoading(false);
+    }
     fetchUserListings();
-  }, [auth.currentUser.uid]); // removed the dependency array
+  }, [auth.currentUser.uid]);
   return (
     <>
       <section className='max-w-6xl mx-auto flex

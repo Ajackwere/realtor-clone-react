@@ -174,7 +174,7 @@ try {
         const docRef = await addDoc(collection(db, "listings"), formDataCopy);
         setLoading(false);
         toast.success("Listing Created");
-        navigate(`/category/${formDataCopy.type} /${docRef.id}`)
+        navigate(`/category/${formDataCopy.type} /${docRef.id}`);
     }
 
     if(loading){
