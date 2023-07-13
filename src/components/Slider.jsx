@@ -54,7 +54,7 @@ export default function Slider() {
         <Swiper
           slidesPerView={1}
           navigation
-          Pagination={{ type: "progressbar" }}
+          pagination={{ type: "progressbar" }}
           effect="fade"
           modules={[EffectFade]}
           autoplay={{ delay: 3000 }}
