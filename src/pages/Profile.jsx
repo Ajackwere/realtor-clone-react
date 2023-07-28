@@ -144,7 +144,7 @@ export default function Profile() {
           ease-in-out hover:shadow-lg active:bg-blue-900'>
             <Link to='/create-listing' className="flex
             justify-center items-center">
-              <FcHome className="mr-2 text-3xl bg-red300 rounded-full
+              <FcHome className="mr-2 text-3xl bg-red-300 rounded-full
               p-1 border-2"/> 
               Sell or Rent your home
             </Link>
